@@ -1,60 +1,83 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Lever() {
   const audioUp = useRef<HTMLAudioElement | null>(null);
   const audioDown = useRef<HTMLAudioElement | null>(null);
 
   const [position, setPosition] = useState(0);
-  const [dragging, setDragging] = useState(false);
   const [startY, setStartY] = useState<number | null>(null);
+  const dragging = useRef(false);
 
-  // クライアントでのみ Audio を初期化
+  // Audio 初期化（クライアント限定）
   useEffect(() => {
     audioUp.current = new Audio('/kigaii.mp3');
     audioDown.current = new Audio('/uun.mp3');
   }, []);
 
+  // グローバルなマウス移動／終了リスナー
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragging.current || startY === null) return;
+      const diff = e.clientY - startY;
+      const clamped = Math.max(-80, Math.min(80, diff));
+      setPosition(clamped);
+    };
+
+    const handleMouseUp = () => {
+      if (position < -50 && audioUp.current) audioUp.current.play();
+      else if (position > 50 && audioDown.current) audioDown.current.play();
+
+      dragging.current = false;
+      setStartY(null);
+      setTimeout(() => setPosition(0), 100);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [position, startY]);
+
   const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
-    setDragging(true);
+    e.preventDefault();
     const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(y);
+    dragging.current = true;
   };
 
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!dragging || startY === null) return;
-    const currentY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const diff = currentY - startY;
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragging.current || startY === null) return;
+    const diff = e.touches[0].clientY - startY;
     const clamped = Math.max(-80, Math.min(80, diff));
     setPosition(clamped);
   };
 
-  const handleEnd = () => {
-    if (position < -50 && audioUp.current) {
-      audioUp.current.play();
-    } else if (position > 50 && audioDown.current) {
-      audioDown.current.play();
-    }
+  const handleTouchEnd = () => {
+    if (position < -50 && audioUp.current) audioUp.current.play();
+    else if (position > 50 && audioDown.current) audioDown.current.play();
 
-    setDragging(false);
+    dragging.current = false;
     setStartY(null);
     setTimeout(() => setPosition(0), 100);
   };
 
   return (
-    <div className="w-44 h-72 bg-yellow-700 rounded-b-3xl shadow-inner flex items-center justify-center relative border-4 border-yellow-900">
+    <div className="w-44 h-72 bg-yellow-700 rounded-b-3xl shadow-inner flex items-center justify-center relative border-4 border-yellow-900 touch-none">
+      {/* 固定シャフト */}
       <div className="w-2 h-40 bg-black rounded-full z-0 shadow-inner" />
 
+      {/* 可動バー */}
       <div
         onMouseDown={handleStart}
         onTouchStart={handleStart}
-        onMouseMove={handleMove}
-        onTouchMove={handleMove}
-        onMouseUp={handleEnd}
-        onTouchEnd={handleEnd}
-        onMouseLeave={handleEnd}
-        className="absolute z-10 left-1/2 -translate-x-1/2"
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="absolute z-10 left-1/2 -translate-x-1/2 cursor-pointer"
         style={{
           transform: `translateY(${position}px)`,
         }}

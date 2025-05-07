@@ -14,7 +14,13 @@ export default function Home() {
   `;
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <main className="
+      min-h-screen 
+      flex flex-col items-center justify-center 
+      bg-gray-100 
+      overflow-hidden 
+      touch-none
+    ">
       <h1 className="text-5xl font-bold mb-10">気がいい</h1>
 
       {/* スタートボタン */}
@@ -27,6 +33,7 @@ export default function Home() {
 
       {/* 設定ボタン */}
       <button
+        onClick={() => router.push('/setting')}
         className={`${buttonBase} bg-gray-500 hover:bg-gray-600`}
       >
         設定
@@ -34,6 +41,7 @@ export default function Home() {
 
       {/* 遊び方ボタン */}
       <button
+        onClick={() => router.push('/howto')}
         className={`${buttonBase} bg-green-500 hover:bg-green-600`}
       >
         遊び方
