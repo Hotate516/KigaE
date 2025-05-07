@@ -1,13 +1,20 @@
 'use client';
-import { useRef, useState } from 'react';
+
+import { useRef, useState, useEffect } from 'react';
 
 export default function Lever() {
-  const audioUp = useRef(new Audio('/kigaii.mp3'));
-  const audioDown = useRef(new Audio('/uun.mp3'));
+  const audioUp = useRef<HTMLAudioElement | null>(null);
+  const audioDown = useRef<HTMLAudioElement | null>(null);
 
   const [position, setPosition] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [startY, setStartY] = useState<number | null>(null);
+
+  // クライアントでのみ Audio を初期化
+  useEffect(() => {
+    audioUp.current = new Audio('/kigaii.mp3');
+    audioDown.current = new Audio('/uun.mp3');
+  }, []);
 
   const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
     setDragging(true);
@@ -19,15 +26,14 @@ export default function Lever() {
     if (!dragging || startY === null) return;
     const currentY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const diff = currentY - startY;
-
-    const clamped = Math.max(-80, Math.min(80, diff)); // ★ 上下幅拡大
+    const clamped = Math.max(-80, Math.min(80, diff));
     setPosition(clamped);
   };
 
   const handleEnd = () => {
-    if (position < -50) {
+    if (position < -50 && audioUp.current) {
       audioUp.current.play();
-    } else if (position > 50) {
+    } else if (position > 50 && audioDown.current) {
       audioDown.current.play();
     }
 
@@ -37,11 +43,9 @@ export default function Lever() {
   };
 
   return (
-    <div className="w-44 h-72 bg-gradient-to-b from-yellow-600 to-yellow-800 rounded-b-3xl shadow-2xl flex items-center justify-center relative border-4 border-yellow-900">
-      {/* 固定の黒シャフト */}
+    <div className="w-44 h-72 bg-yellow-700 rounded-b-3xl shadow-inner flex items-center justify-center relative border-4 border-yellow-900">
       <div className="w-2 h-40 bg-black rounded-full z-0 shadow-inner" />
 
-      {/* 横バーだけが上下に動く */}
       <div
         onMouseDown={handleStart}
         onTouchStart={handleStart}
