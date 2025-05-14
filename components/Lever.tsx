@@ -1,8 +1,9 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
+import { useVoice } from '@/contexts/VoiceContext';
 
 export default function Lever() {
+  const { voice } = useVoice(); // ← ここでボイス設定取得
   const audioUp = useRef<HTMLAudioElement | null>(null);
   const audioDown = useRef<HTMLAudioElement | null>(null);
 
@@ -10,13 +11,13 @@ export default function Lever() {
   const [startY, setStartY] = useState<number | null>(null);
   const dragging = useRef(false);
 
-  // Audio 初期化（クライアント限定）
   useEffect(() => {
-    audioUp.current = new Audio('/kigaii.mp3');
+    // ボイス種類で切り替え
+    const upSrc = voice === 'male' ? '/kigaii.mp3' : '/kigaE_metan.wav';
+    audioUp.current = new Audio(upSrc);
     audioDown.current = new Audio('/uun.mp3');
-  }, []);
+  }, [voice]);
 
-  // グローバルなマウス移動／終了リスナー
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragging.current || startY === null) return;
@@ -68,10 +69,8 @@ export default function Lever() {
 
   return (
     <div className="w-44 h-72 bg-yellow-700 rounded-b-3xl shadow-inner flex items-center justify-center relative border-4 border-yellow-900 touch-none">
-      {/* 固定シャフト */}
       <div className="w-2 h-40 bg-black rounded-full z-0 shadow-inner" />
 
-      {/* 可動バー */}
       <div
         onMouseDown={handleStart}
         onTouchStart={handleStart}

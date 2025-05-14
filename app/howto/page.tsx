@@ -6,7 +6,8 @@ export default function HowToPage() {
       <h1 className="text-4xl font-bold mb-6">遊び方</h1>
       <p className="text-lg text-gray-700 max-w-xl text-center">
         レバーを上に引くと「気がいい！」、下に引くと「うーん...」の音が鳴ります。<br />
-        スタート画面からゲームを始めてください。
+        君もレバーでお気持ち表現しよう<br />
+        ※本アプリは某番組とは一切関係ありません
       </p>
     </main>
   );
