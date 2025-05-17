@@ -5,6 +5,7 @@ import Link from 'next/link';
 export default function LeverPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <h1 className="text-4xl font-bold mb-8">音声をオンにしてお楽しみください。</h1>
       <h1 className="text-4xl font-bold mb-8">レバーを動かして！</h1>
       <Lever />
       <Link href="/">
